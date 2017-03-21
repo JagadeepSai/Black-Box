@@ -5,3 +5,13 @@
        (list "red" "orange" "yellow" "green" "blue" "purple")))
  
 > (rainbow (square 5))
+
+http://www.ccs.neu.edu/home/matthias/HtDP2e/index.html
+; its a general book
+------------------------------------------------------------------------
+"How to design Worlds " --- ****
+http://world.cs.brown.edu/
+------------------------------------------------------------------------
+https://docs.racket-lang.org/teachpack/2htdpuniverse.html#%28part._simulations%29
+Documentation for the Stimulation of Universe :) .
+------------------------------------------------------------------------
