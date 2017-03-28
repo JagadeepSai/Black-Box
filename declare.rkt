@@ -13,7 +13,7 @@
   ;(rectangle 1340 700 "solid" "white"))
 (define atoms 5)
 (define num 6) 
-(define sf 0.52)
+(define sf 0.52)7
 
 (define tile (scale sf (bitmap "a (4).png")))
 (define hit (scale sf (bitmap "a (19).png")))
@@ -67,11 +67,11 @@
         (cons (cons (remove con_tile l) (- count 1)) -1))))
 ;This returns the update for the state of atoms and a number to say it 
 (define (perd st_ray)
-  (if (not (ray-dir st_ray)) (lambda(x)(car x))
+  (if (= (ray-dir st_ray) 1) (lambda(x)(car x))
                                         (lambda(x)(cdr x)) ))
 ;distance of a atom perpendicular to the ray
 (define (parl st_ray)
-  (if (ray-dir st_ray) (lambda(x)(car x))
+  (if (= (ray-dir st_ray) 0) (lambda(x)(car x))
                                         (lambda(x)(cdr x)) ))
 ;function to distance of a atom parallel to the ray
 
@@ -89,7 +89,7 @@
            [atom (car atom_list) ]
            [away (< (abs ( - (chk1 atom) (chk1 (ray-tile st_ray)))) 2)]
            [dist ( - (chk2 atom) (chk2 (ray-tile st_ray))) ]
-           [sp2  (begin (cond [ (equal? atom (cons 3 4)) (set! a1  sp)  ])
+           [sp2  (begin (cond [ (equal? atom (cons 2 2)) (set! a1  (chk1 (ray-tile st_ray)))  ])
                             (* dist sp) ) ] ; for checking the internal value remove it later
            [near_atom (car (car near_atoms))]
            [go  (int_atom st_ray (cdr atom_list) near_atoms)] )
@@ -103,38 +103,97 @@
                               (cons (cons (car atom_list) (car near_atoms)) (abs dist)))
                     go)) go) go))))
 
+;(define (hit2  near_atom_list)
+ ; (if (= (length near_atom_list) 2)
+  ;      (if (= (abs ( - (chk1 atom) (chk1 ))) 1)
+
+      
+(define far_atom (cons (list (cons +inf.0 +inf.0)) +inf.0))
+
 (define (rules st_ray atom)
+  (if (null? atom) st_ray
   (let* ([chk1  (perd st_ray)]
         [chk2 (parl st_ray)]
         [per_dist (- (chk1 atom) (chk1 (ray-tile st_ray)))]
         [par_dist (- (chk2 atom) (chk2 (ray-tile st_ray)))])
-    
-(define (beside st_ray atom)
+
+(define (beside st_ray atom) ;One way of reflection
   ( if (and (= (abs per_dist) 1)
             (= (abs par_dist) 0))
-       #\r #f ))
-
+       #\r st_ray ))
+;beside tested
 (define (deflect st_ray atom)
   (if (= (abs per_dist) 1)
-    ( let* ([ st1_ray (+ (chk1 atom) per_dist)]
+    ( let* ([ st1_ray (begin (set! a2 (- (chk1 atom) per_dist))
+                             (- (chk1 atom) per_dist) )]
             [ st2_ray (+ (chk2 atom)
-                         (if (= ray-sign st_ray 0) 1 -1))]
+                         (if (= (ray-sign st_ray) 0) 1 -1))]
             [st_ray_up  (if (= (chk1 (cons 1 0)) 1)
                             (cons st1_ray st2_ray)
                             (cons st2_ray st1_ray)) ]
             [o_dir (if (= (ray-dir st_ray) 1) 0 1)]
             )
            (if (> per_dist 0)
-               (ray o_dir 1 st_ray_up)
-               (ray o_dir 0 st_ray_up))
+               (ray o_dir 0 st_ray_up)
+               (ray o_dir 1 st_ray_up))
                )
-    #f ))
+    st_ray ))
+    ;deflect working fine
+    ;Testcases
+    
+   #| (define a (int_atom (ray 0 1 (cons 0 3)) (list (cons 0 1) (cons 1 4) (cons 2 2) (cons 3 3)) (cons (list (cons 20 20)) 20) ))
+> (rules (ray 0 1 (cons 0 3)) (car (car a))) 
+(ray 1 0 '(0 . 3))
+> (define a (int_atom (ray 0 1 (cons 0 3)) (list (cons 0 1) (cons 1 2) (cons 2 2) (cons 3 3)) (cons (list (cons 20 20)) 20) ))
+> (rules (ray 0 1 (cons 0 3)) (car (car a))) 
+(ray 1 1 '(0 . 3))
+> (define a (int_atom (ray 0 1 (cons 0 3)) (list (cons 0 1)  (cons 2 2) (cons 3 3)) (cons (list (cons 20 20)) 20) ))
+> (rules (ray 0 1 (cons 0 3)) (car (car a))) 
+(ray 1 1 '(1 . 3))
+> |#
               
 (define (hit st_ray atom)
-  (if (= per_dist 0) #\h #f )) #t))
- 
-;(define (interact st_ray st_atom_list)
-  
+  (if (= per_dist 0) #\h st_ray))
+;Hit tested 
+    ;Testing
+    (define a (beside st_ray atom ))
+   (if (not (equal? a st_ray)) a
+       (let ([b (hit st_ray atom) ] )
+         (if (not (equal? b st_ray)) b
+             (let ([c (deflect st_ray atom) ] )
+            (if (not (equal? c st_ray)) c st_ray))))))) )
+             
+(define (end_ray st_ray)
+  (let ( [ pos (ray-tile st_ray)] )
+     (if (= (ray-dir st_ray) 1) 
+        (if (= (ray-sign st_ray) 0) (ray 1 0 (cons (car pos) 0))
+                                    (ray 1 1 (cons (car pos) num)))
+
+        (if (= (ray-sign st_ray) 0) (ray 0 0  (cons 0 (cdr pos) ))
+                                    (ray 0 1  (cons num (cdr pos) )))
+        )))
+; Moves straight ; Tested
+
+
+
+(define c_int_st 0)   
+(define (interact st_ray st_atom_list)
+   (let* ([ int_atoms (car (int_atom st_ray st_atom_list far_atom)) ]
+         [new_st_ray  (begin (map (lambda(atom) (set! c_int_st (rules st_ray atom))) int_atoms) c_int_st )])
+     (define (final new_st_ray)
+  (lambda (st_ray)
+    (if (equal? new_st_ray #\h) #\h
+      (if (equal? new_st_ray #\r) #\r
+          (if (equal? new_st_ray st_ray)
+              (end_ray new_st_ray)
+              (interact new_st_ray st_atom_list) )))))
+       ((final new_st_ray) st_ray)))
+     ;(if (equal? new_st_ray st_ray) (end_ray new_st_ray)
+      ;   (interact new_st_ray st_atom_list))))
+
+
+;(define 
+;
 
 
 
