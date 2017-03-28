@@ -13,7 +13,8 @@
   ;(rectangle 1340 700 "solid" "white"))
 (define atoms 5)
 (define num 6) 
-(define sf 0.52)7
+(define sf 0.52)
+(define shift 20)
 
 (define tile (scale sf (bitmap "a (4).png")))
 (define hit (scale sf (bitmap "a (19).png")))
@@ -25,7 +26,7 @@
 (define tile_side (image-width tile))
 (define box_side (* tile_side  num))
 
-(define offset (rectangle tile_side 20 "outline" "transparent"  ))
+(define offset (rectangle tile_side shift "outline" "transparent"  ))
 
 (define box-x (- 670 (* (/ num 2) tile_side)))
 (define box-y (- 350 (* (/ num 2) tile_side)))
@@ -34,9 +35,10 @@
   (posn (+ (/ tile_side 2) box-x)
      (+ box-y (/ tile_side 2))))
 ;origin is the center of the first tile
-                    
+ (define (make_box x1 y1 side)
+   (box x1 y1 (+ x1 side) (+ y1 side)))
 (define main_box
-  (box box-x box-y (+ box-x box_side) (+ box-y box_side))) 
+  (make_box box-x box-y box_side))
 ;the Whole box
 (define (check_in? box x y)
  (and (and(<= x (box-x2 box)) (>= x (box-x1 box)))
@@ -50,6 +52,24 @@
   (posn (+ (posn-x origin) (* (car tile) tile_side))
         (+ (posn-y origin) (* (cdr tile) tile_side))) )
 ; Given a tile finds the center of it
+(define (one-true list pos)
+  (if (null? list) (if (equal? (cdr pos) 1) (car pos) #f)
+      (if (equal? (car list) #t)
+          (if (equal? (cdr pos) 0)
+              (one-true (cdr list) (cons (car pos) 1))
+              #f)
+          (if (= (cdr pos) 1) (one-true (cdr list) (cons (car pos) 1))
+          (one-true (cdr list) (cons (+ (car pos) 1) 0))))))
+
+(define (s_pile x y)
+  (let* ( [ c1 (< x box-x)]
+          [ c2 (> y (+ box-x box_side))]
+          [ c3 (> x (+ box-x box_side))]
+          [ c4 (< y box-y)] )
+      (one-true (list c1 c2 c3 c4) (cons 0 0))))
+;checks whether point is along the sides not whether it is in the box 
+
+
 (define (all_check_atom st_atom con_tile)
   (let* ( [l (car st_atom)]
           [count (cdr st_atom)])
