@@ -14,7 +14,7 @@
 (define atoms 5)
 (define num 6) 
 (define sf 0.52)
-(define shift 20)
+(define sht 20)
 
 (define tile (scale sf (bitmap "a (4).png")))
 (define hit (scale sf (bitmap "a (19).png")))
@@ -26,7 +26,7 @@
 (define tile_side (image-width tile))
 (define box_side (* tile_side  num))
 
-(define offset (rectangle tile_side shift "outline" "transparent"  ))
+(define offset (rectangle tile_side sht "outline" "transparent"  ))
 
 (define box-x (- 670 (* (/ num 2) tile_side)))
 (define box-y (- 350 (* (/ num 2) tile_side)))
@@ -39,6 +39,17 @@
    (box x1 y1 (+ x1 side) (+ y1 side)))
 (define main_box
   (make_box box-x box-y box_side))
+;(define (rect_box x y w h)
+;  (box x y (+ x w) (+ y h)))
+;(define 1_box
+;  (rect_box box-x (- box-y (+ sht tile_side))
+;         box_side tile_side))
+;(define 2_box
+;  (rect_box (+ box-x sht box_side) box-y
+;            tile_side box_side))
+;(define 3_box
+;  (rect_box (
+
 ;the Whole box
 (define (check_in? box x y)
  (and (and(<= x (box-x2 box)) (>= x (box-x1 box)))
@@ -51,7 +62,24 @@
 (define (cen_tile tile)
   (posn (+ (posn-x origin) (* (car tile) tile_side))
         (+ (posn-y origin) (* (cdr tile) tile_side))) )
+
 ; Given a tile finds the center of it
+(define max-posn
+  (let ([ side (+ sht tile_side)])
+    (posn (- box-x side) (- box-y side))))
+
+(define max_box
+  (make_box (posn-x max-posn) (posn-y max-posn)
+            (+ (* (+ num 2) tile_side) (* 2 sht))))
+
+; the max box enclosing
+(define obox
+  (make_box (- box-x sht)
+            (- box-y sht)
+            (+ (* num tile_side) (* 2 sht))))
+
+
+
 (define (one-true list pos)
   (if (null? list) (if (equal? (cdr pos) 1) (car pos) #f)
       (if (equal? (car list) #t)
@@ -62,12 +90,20 @@
           (one-true (cdr list) (cons (+ (car pos) 1) 0))))))
 
 (define (s_pile x y)
-  (let* ( [ c1 (< x box-x)]
-          [ c2 (> y (+ box-x box_side))]
-          [ c3 (> x (+ box-x box_side))]
-          [ c4 (< y box-y)] )
+  (let* ( [ c1 (< y box-y)]
+          [ c2 (> x (+ box-x box_side))]
+          [ c3 (> y (+ box-y box_side))]
+          [ c4 (< x box-x)] )
       (one-true (list c1 c2 c3 c4) (cons 0 0))))
+
+(define (in_side? x y)
+  (let ([ side (s_pile x y) ])
+  (if (and (not (equal? side #f))
+        (check_in? max_box x y)
+           (not (check_in? obox x y))) side #f)))
+; (define (side_tile       
 ;checks whether point is along the sides not whether it is in the box 
+ 
 
 
 (define (all_check_atom st_atom con_tile)
