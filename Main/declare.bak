@@ -1,0 +1,41 @@
+#lang racket
+(define back (scale/xy (/ 1340 1280) (/ 700 800) (bitmap "b2.jpg")))
+  ;(rectangle 1340 700 "solid" "white"))
+
+(define sf 0.52)
+(define tile (scale sf (bitmap "a (4).png")))
+(define hit (scale sf (bitmap "a (19).png")))
+(define reflect (scale sf (bitmap "a (5).png")))
+(define s_tile (scale sf (bitmap "t (7).jpg")))
+(define offset (rectangle 69 10 "outline" "transparent"  ))
+ (define (place how img n)
+   (define (loop srt ans)
+     (if (= srt n) ans
+         (loop (+ srt 1) (how ans img))))
+   (loop 1 img))
+
+(define (row img n) (place beside img n))
+(define (column img n) (place above img n))
+;(define (row img n ans)
+;     (if (= n 10) ans
+;     (row img (+ n 1) (beside ans img))))
+;
+;(define (column img n ans)
+;  (if (= n 8) ans
+;      (column img (+ n 1) (above ans img))))
+
+(define s_row (row s_tile 8))
+(define tile_row (row tile 8))
+(define off-row (row offset 8))
+(define tile_box (column tile_row 8))
+
+
+(define (surround img_row obj)
+   (let* ( (top img_row)
+           (side (rotate 90 img_row))
+           (main obj))
+     (beside (beside side (above top (above main top))) side)))
+(define off_box (surround off-row tile_box))
+(define final_box (surround s_row off_box))
+              
+(define background (place-image final_box 670 350 back))

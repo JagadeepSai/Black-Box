@@ -1,0 +1,11 @@
+#lang racket
+(require 2htdp/universe)
+(require 2htdp/image)
+
+(define background (rectangle 500 500 "solid" "white"))
+
+(define f (lambda(x) background))
+
+(big-bang background
+          [to-draw f])
+
