@@ -12,7 +12,7 @@
 (define back (scale/xy (/ 1340 1280) (/ 700 800) (bitmap "b2.jpg")))
   ;(rectangle 1340 700 "solid" "white"))
 (define atoms 4)
-(define num 5) 
+(define num 8) 
 (define sf 0.52)
 (define sht 20)
 
@@ -21,7 +21,25 @@
 (define reflect (scale sf (bitmap "a (5).png")))
 (define s_tile (scale sf (bitmap "t (7).jpg")))
 (define atom_tile (scale sf (bitmap "a (3).png")))
-(define p1 (scale sf (bitmap "a (21).png")))
+(define p1  (bitmap "a (21).png"))
+(define p2  (bitmap "a (16).png"))
+(define p3  (bitmap "a (8).png"))
+(define p4  (bitmap "a (15).png"))
+(define p5  (bitmap "a (6).png"))
+(define p6  (bitmap "a (12).png"))
+(define p7  (bitmap "a (17).png"))
+(define p8  (bitmap "a (14).png"))
+(define p9  (bitmap "a (18).png"))
+(define p10 (bitmap "a (13).png"))
+(define p11  (bitmap "a (11).png"))
+(define p12  (bitmap "a (10).png"))
+(define p13  (bitmap "a (9).png"))
+(define p14  (bitmap "a (7).png"))
+(define pic-list (list p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 p12 p13 p14))
+
+(define que (map(lambda(img) (scale sf img)) pic-list)) 
+
+
 
 
 (define tile_side (image-width tile))
@@ -190,12 +208,14 @@
                               (cons (cons (car atom_list) (car near_atoms)) (abs dist)))
                     go)) go) go))))
 
-;(define (hit2  near_atom_list)
- ; (if (= (length near_atom_list) 2)
-  ;      (if (= (abs ( - (chk1 atom) (chk1 ))) 1)
+
+
+      ;(if (= (abs ( - (chk1 atom) (chk1 ))) 1)
 
       
 (define far_atom (cons (list (cons +inf.0 +inf.0)) +inf.0))
+
+
 
 (define (rules st_ray atom)
   (if (null? atom) st_ray
@@ -243,9 +263,9 @@
   (if (= per_dist 0) #\h st_ray))
 ;Hit tested 
     ;Testing
-    (define a (beside st_ray atom ))
+    (define a (hit st_ray atom ))
    (if (not (equal? a st_ray)) a
-       (let ([b (hit st_ray atom) ] )
+       (let ([b (beside st_ray atom) ] )
          (if (not (equal? b st_ray)) b
              (let ([c (deflect st_ray atom) ] )
             (if (not (equal? c st_ray)) c st_ray))))))) )
@@ -259,14 +279,31 @@
         (if (= (ray-sign st_ray) 0) (ray 0 0  (cons 0 (cdr pos) ))
                                     (ray 0 1  (cons num (cdr pos) )))
         )))
-; Moves straight ; Tested
+(define (h st_ray atom)
+  (let* ( [chk1 (if (= (ray-dir st_ray) 1) (lambda(x)(car x))
+                                        (lambda(x)(cdr x)) )]
+          [per_dist  (- (chk1 atom) (chk1 (ray-tile st_ray)))])
+  (if (= per_dist 0) #\h st_ray)))
 
+
+; Moves straight ; Tested
+(define (hit2  st_ray near_atom_list)
+  (if (> (length near_atom_list) 1)
+      (let ([m #f])
+        (begin
+          (map (lambda(atom) (cond [(equal? (h st_ray atom) #\h) (set! m #\h)])) near_atom_list)
+          m)) #f ))
 
 
 (define c_int_st 0)   
+
+(define n 0)
 (define (interact st_ray st_atom_list)
+  
    (let* ([ int_atoms (car (int_atom st_ray st_atom_list far_atom)) ]
-         [new_st_ray  (begin (map (lambda(atom) (set! c_int_st (rules st_ray atom))) int_atoms) c_int_st )])
+          [other_hit   (hit2 st_ray int_atoms)]
+         [new_st_ray  (if (equal? other_hit #f) (begin (map (lambda(atom) (set! c_int_st (rules st_ray atom))) int_atoms) c_int_st )
+                                                   other_hit )])
      (define (final new_st_ray)
   (lambda (st_ray)
     (if (equal? new_st_ray #\h) #\h
@@ -315,4 +352,3 @@
 (define final_box (surround s_row off_box))
               
 (define background (place-image final_box 670 350 back))
-

@@ -6,10 +6,13 @@
 
 (define st_atom (cons (list ) 0))
 (define ray_tile (cons 1 1))
+(define buf-que que)
+
+(define c_img p1)
 ;(define st_ray  (ray (cons
 
-(define fix_atom (list(cons (random num) (random num)) (cons (random num) (random num))
-                            (cons (random num) (random num)) (cons (random num) (random num)) ))
+(define fix_atom #|(list ( cons 4  1) (cons 4  0) (cons 4  2) (cons 0  3))) |# (list(cons (random num) (random num)) (cons (random num) (random num))
+                           (cons (random num) (random num)) (cons (random num) (random num)) ))
 
 (define f  background)
 (define g  (lambda(centre f img)
@@ -28,7 +31,9 @@
            (if (or (equal? end_ray #\r)
                    (equal? s_tile (side_tile_finder end_ray)))
                (list 1 reflect (side_center s_tile) )
-               (list 2 p1 (side_center s_tile) (side_center (side_tile_finder end_ray)))))])
+               (list 2 (begin (set! c_img (car buf-que)) (set! buf-que (cdr buf-que)) c_img)
+
+                              (side_center s_tile) (side_center (side_tile_finder end_ray)))))]) 
        (if (= (car ans) 1) (g (caddr ans) f  (cadr ans))
            (g (caddr ans) (g (cadddr ans) f (cadr ans)) (cadr ans))))
            
