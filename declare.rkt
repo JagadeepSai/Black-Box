@@ -11,8 +11,8 @@
 ;-------------------------------------------------------------------------------
 (define back (scale/xy (/ 1340 1280) (/ 700 800) (bitmap "b2.jpg")))
   ;(rectangle 1340 700 "solid" "white"))
-(define atoms 5)
-(define num 6) 
+(define atoms 4)
+(define num 8) 
 (define sf 0.52)
 (define sht 20)
 
@@ -21,8 +21,23 @@
 (define reflect (scale sf (bitmap "a (5).png")))
 (define s_tile (scale sf (bitmap "t (7).jpg")))
 (define atom_tile (scale sf (bitmap "a (3).png")))
+(define p1  (bitmap "a (21).png"))
+(define p2  (bitmap "a (16).png"))
+(define p3  (bitmap "a (8).png"))
+(define p4  (bitmap "a (15).png"))
+(define p5  (bitmap "a (6).png"))
+(define p6  (bitmap "a (12).png"))
+(define p7  (bitmap "a (17).png"))
+(define p8  (bitmap "a (14).png"))
+(define p9  (bitmap "a (18).png"))
+(define p10 (bitmap "a (13).png"))
+(define p11  (bitmap "a (11).png"))
+(define p12  (bitmap "a (10).png"))
+(define p13  (bitmap "a (9).png"))
+(define p14  (bitmap "a (7).png"))
+(define pic-list (list p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 p12 p13 p14))
 
-
+(define que (map(lambda(img) (scale sf img)) pic-list)) 
 (define tile_side (image-width tile))
 (define box_side (* tile_side  num))
 
@@ -97,11 +112,41 @@
       (one-true (list c1 c2 c3 c4) (cons 0 0))))
 
 (define (in_side? x y)
-  (let ([ side (s_pile x y) ])
-  (if (and (not (equal? side #f))
+
+  (if (and (not (equal? (s_pile x y) #f))
         (check_in? max_box x y)
-           (not (check_in? obox x y))) side #f)))
-; (define (side_tile       
+           (not (check_in? obox x y))) #t #f))
+;---------------------------------------------------------------------------------------------
+ (define (side_tile n x y)
+   ( if (or (= n 0) (= n 2)) (cons n (floor (/ (- x (box-x1 main_box)) tile_side)) )
+        (cons n (floor (/ (- y (box-y1 main_box)) tile_side)) )))
+(define (side_tile_finder end_ray)
+  (if (= (ray-dir end_ray) 1)
+      (if (= (ray-sign end_ray) 0) (cons 0 (car (ray-tile end_ray)))
+                                   (cons 2 (car (ray-tile end_ray))))
+      
+      (if (= (ray-sign end_ray) 0) (cons 3 (cdr (ray-tile end_ray)))
+                                   (cons 1 (cdr (ray-tile end_ray))))))
+
+
+(define (tile_to_st_ray side_tile) ;checked 
+  (let ([a  (car side_tile) ])
+    (cond [(= a 0) (ray 1 1 (cons (cdr side_tile) 0))]
+          [(= a 1) (ray 0 0 (cons (- num 1) (cdr side_tile)))]
+          [(= a 2) (ray 1 0 (cons (cdr side_tile) (- num 1)))]
+          [(= a 3) (ray 0 1 (cons 0 (cdr side_tile)))]
+          [else #f] )))
+  ; only use this for side tiles
+
+(define (side_center side_tile)
+  (let ([ a (car side_tile)])
+    (cond [(= a 0) (posn (+ (posn-x origin) (* tile_side (cdr side_tile))) (- box-y (+ sht (/ tile_side 2))) )]
+          [(= a 1) (posn (+ box-x box_side  sht (/ tile_side 2)) (+ (posn-y origin) (* tile_side (cdr side_tile))))]
+          [(= a 2) (posn (+ (posn-x origin) (* tile_side (cdr side_tile))) (+ box-y box_side sht (/ tile_side 2)))]
+          [(= a 3) (posn (- box-x (+ sht (/ tile_side 2))) (+ (posn-y origin) (* tile_side (cdr side_tile))))]))) 
+
+                                                            
+      
 ;checks whether point is along the sides not whether it is in the box 
  
 
